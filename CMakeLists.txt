@@ -22,7 +22,7 @@ project(
         LANGUAGES C CXX)
 
 add_library(${PROJECT_NAME} INTERFACE)
-add_library(sl::template ALIAS ${PROJECT_NAME})
+add_library(sl::http ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME} INTERFACE include)
 
