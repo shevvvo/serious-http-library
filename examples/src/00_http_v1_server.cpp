@@ -24,8 +24,9 @@ void main(std::uint16_t port, std::uint16_t max_clients, std::uint32_t tcount) {
     io::socket::bound_server bound_server = *ASSERT_VAL(std::move(socket).bind(AF_INET, port, INADDR_ANY));
     io::socket::server server = *ASSERT_VAL(std::move(bound_server).listen(max_clients));
     io::async_epoll async_epoll{ epoll, server };
+    http::v1::parser parser;
 
-    auto client_handle_coro = [](io::async_connection::view conn, exec::executor& executor) -> exec::async<void> {
+    auto client_handle_coro = [parser = &parser](io::async_connection::view conn, exec::executor& executor) -> exec::async<void> {
         using exec::operator co_await;
         using exec::operator|;
 
@@ -44,11 +45,11 @@ void main(std::uint16_t port, std::uint16_t max_clients, std::uint32_t tcount) {
             }
 
             const meta::maybe<http::v1::request_type> maybe_http_request =
-                http::v1::parse(std::span<const std::byte>{ request_buffer });
+                parser->parse(std::span<std::byte>{ request_buffer });
 
             const http::v1::response_type http_response = handle(maybe_http_request);
 
-            const std::vector<std::byte> response_buffer = http::v1::serialize(http_response);
+            const std::span<std::byte> response_buffer = http::v1::serializer::serialize(http_response);
 
             {
                 std::span<const std::byte> write_buffer{ response_buffer };
