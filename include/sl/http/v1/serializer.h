@@ -3,7 +3,7 @@
 #include <span>
 #include <sstream>
 
-#include "v1_message.hpp"
+#include "message.hpp"
 
 namespace http::v1 {
 

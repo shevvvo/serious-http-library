@@ -1,5 +1,3 @@
-include(cmake/CPM.cmake)
-
 cpmaddpackage(
         NAME serious-io-library
         GIT_REPOSITORY "git@github.com:UsatiyNyan/serious-io-library.git"
