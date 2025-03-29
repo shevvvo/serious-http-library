@@ -48,7 +48,7 @@ void main(std::uint16_t port, std::uint16_t max_clients, std::uint32_t tcount) {
 
             const http::v1::response_type http_response = handle(maybe_http_request);
 
-            const std::span<std::byte> response_buffer = http::v1::serializer::serialize(http_response);
+            const std::vector<std::byte> response_buffer = http::v1::serializer::serialize(http_response);
 
             {
                 std::span<const std::byte> write_buffer{ response_buffer };
