@@ -3,9 +3,7 @@
 #include "message.hpp"
 
 #include <algorithm>
-#include <range/v3/iterator/basic_iterator.hpp>
 #include <span>
-#include <sstream>
 #include <charconv>
 
 #include <sl/meta/monad/maybe.hpp>
@@ -23,7 +21,7 @@ struct parse_startline_type {
 };
 
 struct parse_headers_type {
-    std::map<std::string_view, std::string_view> headers;
+    std::unordered_map<std::string_view, std::string_view> headers;
     std::string_view remainder;
 };
 
@@ -32,12 +30,12 @@ auto parse_part(std::string_view x, std::string_view term) -> sl::meta::maybe<st
     if (x_size == std::string_view::npos) {
         return sl::meta::null;
     }
-    return std::make_pair(x.substr(x_size), x.substr(x_size, std::string_view::npos));
+    return std::make_pair(x.substr(0, x_size), x.substr(x_size + term.size(), std::string_view::npos));
 }
 
 auto process_headers(std::string_view buffer_str) -> sl::meta::maybe<parse_headers_type> {
     auto end_of_line_result = parse_part(buffer_str, "\r\n");
-    std::map<std::string_view, std::string_view> headers;
+    std::unordered_map<std::string_view, std::string_view> headers;
 
     std::string_view remainder;
 
@@ -103,22 +101,11 @@ auto parse(std::span<const std::byte> buffer) -> sl::meta::result<request_type, 
     if (!header_result.has_value()) { return sl::meta::err("parse_failed"); }
 
     const auto [header_value, header_remainder] = header_result.value();
-    auto cont_length_it = header_value.find("Content-Length");
-    if (cont_length_it != header_value.end()) {
-
-        size_t cont_size;
-        auto result = std::from_chars(cont_length_it->second.data(), cont_length_it->second.data() + cont_length_it->second.size(), cont_size);
-        if (result.ec == std::errc::invalid_argument) {
-            return sl::meta::err("parse_failed");
-        }
-        auto cont_length = std::min(buffer_str.size(), cont_size);
-        request.body = buffer_str.substr(cont_length);
-    }
-
     request.headers = header_value;
     request.method = start_line_result->method;
     request.uri = start_line_result->uri;
     request.version = start_line_result->version;
+    request.body = header_remainder;
     return request;
 }
 
