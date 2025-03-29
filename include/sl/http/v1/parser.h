@@ -35,17 +35,6 @@ auto parse_part(std::string_view x, std::string_view term) -> sl::meta::maybe<st
     return std::make_pair(x.substr(x_size), x.substr(x_size, std::string_view::npos));
 }
 
-struct parser {
-    parser() : state_(state::ParsingStartLine), content_length_(0) {}
-
-    enum class state { ParsingStartLine, ParsingHeaders, ParsingBody, Completed, Error };
-
-    state state_;
-    request_type request_;
-    std::span<const std::byte> buffer_;
-    size_t content_length_;
-};
-
 auto process_headers(std::string_view buffer_str) -> sl::meta::maybe<parse_headers_type> {
     auto end_of_line_result = parse_part(buffer_str, "\r\n");
     std::map<std::string_view, std::string_view> headers;

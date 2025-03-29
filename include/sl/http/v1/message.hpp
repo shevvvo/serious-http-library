@@ -6,7 +6,7 @@
 namespace http::v1 {
 
 struct message_type {
-    std::string_view version = "HTTP/1.1";
+    std::string_view version;
     std::map<std::string_view, std::string_view> headers;
     std::string_view body;
 
