@@ -2,7 +2,7 @@
 
 #include "sl/http/v1/parser.h"
 
-namespace http::v1 {
+namespace sl::http::v1 {
 
 TEST(func, get1) {
     std::string_view get_req = "GET /index.html HTTP/1.1\r\n"

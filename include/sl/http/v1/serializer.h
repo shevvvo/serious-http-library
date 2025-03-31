@@ -5,7 +5,7 @@
 
 #include "message.hpp"
 
-namespace http::v1 {
+namespace sl::http::v1 {
 
 class serializer {
 public:

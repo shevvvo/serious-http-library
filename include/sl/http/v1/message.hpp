@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include <map>
+#include <unordered_map>
 
-namespace http::v1 {
+namespace sl::http::v1 {
 
 struct message_type {
     std::string_view version;
