@@ -64,9 +64,8 @@ meta::maybe<parse_headers_type> process_headers(std::string_view buffer_str) {
     if (headers.empty()) {
         return meta::null;
     }
-
-    parse_headers_type result {headers, remainder};
-    return result;
+    
+    return parse_headers_type{headers, remainder};
 }
 
 meta::maybe<parse_startline_type> parse_start_line(std::string_view buffer_str) {
@@ -81,8 +80,7 @@ meta::maybe<parse_startline_type> parse_start_line(std::string_view buffer_str) 
     const auto version_result = parse_part(uri_remainder, "\r\n");
     if (!version_result.has_value()) { return meta::null; }
     const auto [version, version_remainder] = version_result.value();
-    parse_startline_type result = { method, uri, version, version_remainder };
-    return result;
+    return parse_startline_type{ method, uri, version, version_remainder };
 }
 
 } // detail
@@ -92,8 +90,6 @@ meta::result<request_type, std::string_view> parse(std::span<const std::byte> bu
     const char* data = std::bit_cast<const std::string_view::value_type*>(buffer.data());
     std::string_view buffer_str = {data, size};
 
-    request_type request{};
-
     const auto start_line_result = detail::parse_start_line(buffer_str);
     if (!start_line_result.has_value()) { return meta::err("parse_failed"); }
 
@@ -101,12 +97,7 @@ meta::result<request_type, std::string_view> parse(std::span<const std::byte> bu
     if (!header_result.has_value()) { return meta::err("parse_failed"); }
 
     const auto [header_value, header_remainder] = header_result.value();
-    request.headers = header_value;
-    request.method = start_line_result->method;
-    request.uri = start_line_result->uri;
-    request.version = start_line_result->version;
-    request.body = header_remainder;
-    return request;
+    return request_type{{start_line_result->version, header_value, header_remainder}, start_line_result->uri, start_line_result->method};
 }
 
 } // http::v1
