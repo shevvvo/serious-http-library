@@ -33,7 +33,7 @@ meta::maybe<std::pair<std::string_view, std::string_view>> parse_part(std::strin
     return std::make_pair(x.substr(0, x_size), x.substr(x_size + term.size(), std::string_view::npos));
 }
 
-meta::maybe<parse_headers_type> process_headers(std::string_view buffer_str) {
+parse_headers_type process_headers(std::string_view buffer_str) {
 
     std::unordered_map<std::string_view, std::string_view> headers;
 
@@ -89,10 +89,7 @@ meta::result<request_type, std::string_view> parse(std::span<const std::byte> bu
     if (!start_line_result.has_value()) { return meta::err("parse_failed"); }
 
     const auto header_result = detail::process_headers(start_line_result->remainder);
-    if (!header_result.has_value()) { return meta::err("parse_failed"); }
-
-    const auto [header_value, header_remainder] = header_result.value();
-    return request_type{{start_line_result->version, header_value, header_remainder}, start_line_result->uri, start_line_result->method};
+    return request_type{{start_line_result->version, header_result.headers, header_result.remainder}, start_line_result->uri, start_line_result->method};
 }
 
 } // http::v1
