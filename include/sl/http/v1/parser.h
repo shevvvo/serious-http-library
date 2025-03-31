@@ -25,7 +25,7 @@ struct parse_headers_type {
     std::string_view remainder;
 };
 
-auto parse_part(std::string_view x, std::string_view term) -> meta::maybe<std::pair<std::string_view, std::string_view>> {
+meta::maybe<std::pair<std::string_view, std::string_view>> parse_part(std::string_view x, std::string_view term) {
     const std::size_t x_size = x.find(term);
     if (x_size == std::string_view::npos) {
         return meta::null;
@@ -33,7 +33,7 @@ auto parse_part(std::string_view x, std::string_view term) -> meta::maybe<std::p
     return std::make_pair(x.substr(0, x_size), x.substr(x_size + term.size(), std::string_view::npos));
 }
 
-auto process_headers(std::string_view buffer_str) -> meta::maybe<parse_headers_type> {
+meta::maybe<parse_headers_type> process_headers(std::string_view buffer_str) {
     auto end_of_line_result = parse_part(buffer_str, "\r\n");
     std::unordered_map<std::string_view, std::string_view> headers;
 
@@ -69,7 +69,7 @@ auto process_headers(std::string_view buffer_str) -> meta::maybe<parse_headers_t
     return result;
 }
 
-auto parse_start_line(std::string_view buffer_str) -> meta::maybe<parse_startline_type> {
+meta::maybe<parse_startline_type> parse_start_line(std::string_view buffer_str) {
     const auto method_result = parse_part(buffer_str, " ");
     if (!method_result.has_value()) { return meta::null; }
     const auto [method, method_remainder] = method_result.value();
@@ -87,7 +87,7 @@ auto parse_start_line(std::string_view buffer_str) -> meta::maybe<parse_startlin
 
 } // detail
 
-auto parse(std::span<const std::byte> buffer) -> meta::result<request_type, std::string_view> {
+meta::result<request_type, std::string_view> parse(std::span<const std::byte> buffer) {
     const std::size_t size = buffer.size();
     const char* data = std::bit_cast<const std::string_view::value_type*>(buffer.data());
     std::string_view buffer_str = {data, size};
