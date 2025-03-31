@@ -34,17 +34,19 @@ meta::maybe<std::pair<std::string_view, std::string_view>> parse_part(std::strin
 }
 
 meta::maybe<parse_headers_type> process_headers(std::string_view buffer_str) {
-    auto end_of_line_result = parse_part(buffer_str, "\r\n");
+
     std::unordered_map<std::string_view, std::string_view> headers;
 
-    std::string_view remainder;
+    std::string_view remainder = buffer_str;
 
-    while (end_of_line_result.has_value()) {
+    while (true) {
+        auto end_of_line_result = parse_part(remainder, "\r\n");
+        if (!end_of_line_result.has_value()) {
+            return parse_headers_type{headers, remainder};
+        }
         const auto [full_str, full_str_remainder] = end_of_line_result.value();
-        remainder = full_str_remainder;
         if (full_str.empty()) {
-            parse_headers_type result {headers, remainder};
-            return result;
+            return parse_headers_type{headers, full_str_remainder};
         }
 
         const auto header_result = parse_part(full_str, ": ");
@@ -56,16 +58,9 @@ meta::maybe<parse_headers_type> process_headers(std::string_view buffer_str) {
 
         const auto [header, header_remainder] = header_result.value();
 
-        headers[header] = header_remainder;
-
-        end_of_line_result = parse_part(remainder, "\r\n");
+        headers.insert_or_assign(header, header_remainder);
+        remainder = full_str_remainder;
     }
-
-    if (headers.empty()) {
-        return meta::null;
-    }
-    
-    return parse_headers_type{headers, remainder};
 }
 
 meta::maybe<parse_startline_type> parse_start_line(std::string_view buffer_str) {
