@@ -7,7 +7,7 @@ namespace sl::http::v1 {
 
 struct message_type {
     std::string_view version;
-    std::unordered_map<std::string_view, std::string_view> headers;
+    std::unordered_multimap<std::string_view, std::string_view> headers;
     std::string_view body;
 
     [[nodiscard]] bool has_header(const std::string_view name) const {

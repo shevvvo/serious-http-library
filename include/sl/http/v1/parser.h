@@ -21,7 +21,7 @@ struct parse_startline_type {
 };
 
 struct parse_headers_type {
-    std::unordered_map<std::string_view, std::string_view> headers;
+    std::unordered_multimap<std::string_view, std::string_view> headers;
     std::string_view remainder;
 };
 
@@ -35,7 +35,7 @@ meta::maybe<std::pair<std::string_view, std::string_view>> parse_part(std::strin
 
 parse_headers_type process_headers(std::string_view buffer_str) {
 
-    std::unordered_map<std::string_view, std::string_view> headers;
+    std::unordered_multimap<std::string_view, std::string_view> headers;
 
     std::string_view remainder = buffer_str;
 
@@ -58,7 +58,7 @@ parse_headers_type process_headers(std::string_view buffer_str) {
 
         const auto [header, header_remainder] = header_result.value();
 
-        headers.insert_or_assign(header, header_remainder);
+        headers.emplace(header, header_remainder);
         remainder = full_str_remainder;
     }
 }
